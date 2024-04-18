@@ -16,6 +16,7 @@
 	<description>Demo project for Spring Boot</description>
 	<modules>
 		<module>customer</module>
+		<module>fraud</module>
 	</modules>
 	<properties>
 		<java.version>22</java.version>
