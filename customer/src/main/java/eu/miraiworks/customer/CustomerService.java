@@ -1,5 +1,6 @@
 package eu.miraiworks.customer;
 
+import eu.miraiworks.amqp.RabbitMQMessageProducer;
 import eu.miraiworks.clients.fraud.FraudCheckResponse;
 import eu.miraiworks.clients.fraud.FraudClient;
 import eu.miraiworks.clients.notification.NotificationClient;
@@ -12,8 +13,8 @@ import org.springframework.web.client.RestTemplate;
 @AllArgsConstructor
 public class CustomerService {
     private final CustomerRepository customerRepository;
-    private final NotificationClient notificationClient;
     private final FraudClient fraudClient;
+    private final RabbitMQMessageProducer rabbitMQMessageProducer;
 
     public void registerCustomer(CustomerRegistrationRequest customerRegistrationRequest){
         Customer customer = Customer.builder()
@@ -33,14 +34,21 @@ public class CustomerService {
             throw new IllegalStateException("fraudster");
         }
 
-        notificationClient.sendNotification(
+        NotificationRequest notificationRequest =
                 new NotificationRequest(
                         customer.getId(),
                         customer.getEmail(),
                         String.format("Hi %s, welcome to Amigoscode...",
                                 customer.getFirstname())
-                )
+                );
+
+        rabbitMQMessageProducer.publish(
+                notificationRequest,
+                "internal.exchange",
+                "internal.notification.routing-key"
         );
+
+
 
     }
 
