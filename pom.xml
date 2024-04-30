@@ -19,6 +19,7 @@
 		<module>fraud</module>
 		<module>eureka-server</module>
         <module>clients</module>
+        <module>notification</module>
     </modules>
 	<properties>
 		<java.version>22</java.version>

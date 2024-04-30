@@ -2,6 +2,8 @@ package eu.miraiworks.customer;
 
 import eu.miraiworks.clients.fraud.FraudCheckResponse;
 import eu.miraiworks.clients.fraud.FraudClient;
+import eu.miraiworks.clients.notification.NotificationClient;
+import eu.miraiworks.clients.notification.NotificationRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -10,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 @AllArgsConstructor
 public class CustomerService {
     private final CustomerRepository customerRepository;
-    private final RestTemplate restTemplate;
+    private final NotificationClient notificationClient;
     private final FraudClient fraudClient;
 
     public void registerCustomer(CustomerRegistrationRequest customerRegistrationRequest){
@@ -23,8 +25,6 @@ public class CustomerService {
         //todo check if email is valid
         //todo check if email is taken
         customerRepository.saveAndFlush(customer);
-        //todo check if fraudster
-
 
         FraudCheckResponse fraudCheckResponse = fraudClient.isFraudster(customer.getId());
 
@@ -33,7 +33,14 @@ public class CustomerService {
             throw new IllegalStateException("fraudster");
         }
 
-        //todo send notification
+        notificationClient.sendNotification(
+                new NotificationRequest(
+                        customer.getId(),
+                        customer.getEmail(),
+                        String.format("Hi %s, welcome to Amigoscode...",
+                                customer.getFirstname())
+                )
+        );
 
     }
 
